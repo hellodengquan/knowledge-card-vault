@@ -1,7 +1,10 @@
 <template>
   <div class="card-item" :class="card.status">
     <div class="card-header">
-      <h3 class="card-title">{{ card.title }}</h3>
+      <h3 class="card-title">
+        {{ card.title }}
+        <span v-if="showReviewBadge" class="review-badge" title="根据艾宾浩斯记忆曲线，该卡片需要复习">⏰ 需复习</span>
+      </h3>
       <div class="card-actions">
         <button class="btn-icon" @click="$emit('edit', card)" title="编辑">✏️</button>
         <button class="btn-icon" @click="$emit('delete', card.id)" title="删除">🗑️</button>
@@ -41,6 +44,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useCards } from '../composables/useCards'
+
+const { needsReview, isOverDue } = useCards()
 
 const props = defineProps({
   card: {
@@ -58,5 +64,9 @@ const statusText = computed(() => {
     reviewed: '✅ 已掌握'
   }
   return map[props.card.status] || '🆕 新卡片'
+})
+
+const showReviewBadge = computed(() => {
+  return isOverDue(props.card) || needsReview(props.card)
 })
 </script>

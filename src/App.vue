@@ -24,6 +24,14 @@
       <section class="card-list">
         <div class="list-header">
           <h2>卡片列表 ({{ filteredCards.length }})</h2>
+          <div class="sort-controls">
+            <label for="sort-select">排序：</label>
+            <select id="sort-select" v-model="sortBy" class="sort-select">
+              <option value="updatedAt">按更新时间倒序</option>
+              <option value="mastery">按掌握度倒序</option>
+              <option value="tagCount">按标签数倒序</option>
+            </select>
+          </div>
         </div>
         
         <div class="cards-container" v-if="filteredCards.length">
@@ -78,7 +86,11 @@ const {
   addCard, 
   updateCard, 
   deleteCard, 
-  updateStatus 
+  updateStatus,
+  isOverDue,
+  processEbbinghaus,
+  sortCards,
+  needsReview
 } = useCards()
 
 const showModal = ref(false)
@@ -86,9 +98,12 @@ const editingCard = ref(null)
 const selectedTags = ref([])
 const statusFilter = ref('all')
 const searchText = ref('')
+const sortBy = ref('updatedAt')
 
 const filteredCards = computed(() => {
   let result = cards.value
+  
+  result = processEbbinghaus(result)
   
   if (statusFilter.value !== 'all') {
     result = result.filter(c => c.status === statusFilter.value)
@@ -107,6 +122,8 @@ const filteredCards = computed(() => {
       c.content.toLowerCase().includes(keyword)
     )
   }
+  
+  result = sortCards(result, sortBy.value)
   
   return result
 })
